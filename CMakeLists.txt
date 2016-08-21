@@ -25,6 +25,7 @@ project(SoapyOsmo CXX C)
 enable_testing()
 
 set(GR_OSMOSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gr-osmosdr)
+set(CUSTOM_COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/components)
 
 list(APPEND CMAKE_MODULE_PATH ${GR_OSMOSDR_SOURCE_DIR}/cmake/Modules)
 
@@ -236,7 +237,7 @@ find_package(LibRTLSDR)
 find_package(LibMiriSDR)
 find_package(LibHackRF)
 find_package(LibAIRSPY)
-find_package(LibbladeRF)
+find_package(GnuradioFCDPP)
 
 ########################################################################
 # module builder
@@ -278,6 +279,7 @@ function(GrOsmoSDRModule)
         ${CMAKE_CURRENT_SOURCE_DIR}/GrOsmoSDRRegister.in.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/register_${OSMO_MODULE_TARGET}.cc
     @ONLY)
+
     list(APPEND OSMO_MODULE_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/register_${OSMO_MODULE_TARGET}.cc)
 
     include(SoapySDRUtil)
@@ -287,7 +289,6 @@ function(GrOsmoSDRModule)
         SOURCES ${OSMO_MODULE_SOURCES}
         LIBRARIES ${OSMO_MODULE_LIBRARIES}
     )
-
 endfunction(GrOsmoSDRModule)
 
 function(GR_INCLUDE_SUBDIRECTORY target)
@@ -317,6 +318,10 @@ function(GR_INCLUDE_SUBDIRECTORY target)
         LIBRARIES ${my_libs}
     )
 endfunction(GR_INCLUDE_SUBDIRECTORY)
+
+function(INCLUDE_CUSTOM_COMPONENT target)
+    include(${CUSTOM_COMPONENT_DIR}/${target}/CMakeLists.txt)
+endfunction(INCLUDE_CUSTOM_COMPONENT)
 
 include(GrComponent)
 
@@ -402,6 +407,14 @@ GR_REGISTER_COMPONENT("Red Pitaya SDR" ENABLE_REDPITAYA USE_OSMO_REDPITAYA)
 if(ENABLE_REDPITAYA)
 GR_INCLUDE_SUBDIRECTORY(redpitaya)
 endif(ENABLE_REDPITAYA)
+
+########################################################################
+# FunCube Pro+ component
+########################################################################
+GR_REGISTER_COMPONENT("FunCube Pro+" ENABLE_FCDPP GNURADIO_FCDPP_FOUND)
+if(ENABLE_FCDPP)
+INCLUDE_CUSTOM_COMPONENT(GrFcdPP)
+endif(ENABLE_FCDPP)
 
 ########################################################################
 # Print Summary
